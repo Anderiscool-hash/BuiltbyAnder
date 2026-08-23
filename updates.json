@@ -2,6 +2,17 @@
   "updates": [
     {
       "date": "2026-08-23",
+      "version": "1.0.4",
+      "title": "Vercel asset and attribution fix",
+      "changes": [
+        "Moved all PS3 icons, fonts, and sounds to the URL-safe assets/ps3 directory",
+        "Extended the boot loading sequence to five seconds",
+        "Added visible open-source credits, license links, and trademark notice",
+        "Verified every runtime asset loads successfully"
+      ]
+    },
+    {
+      "date": "2026-08-23",
       "version": "1.0.3",
       "title": "Vercel deployment support",
       "changes": [

@@ -24,3 +24,11 @@ Open the local address printed by the development server. The portfolio now load
 ```powershell
 npm run log-update -- "Update title" "First change" "Second change"
 ```
+
+## Open-source credits
+
+- [linkev/PlayStation-3-XMB](https://github.com/linkev/PlayStation-3-XMB) — MIT License; WebGL XMB wave and particle foundation.
+- [libretro/retroarch-assets](https://github.com/libretro/retroarch-assets) — CC BY 4.0; Systematic icons, font, and menu sounds.
+- [baxysquare/baxy-retroarch-themes](https://github.com/baxysquare/baxy-retroarch-themes) — source artwork referenced by the RetroArch Systematic theme.
+
+See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) for details.

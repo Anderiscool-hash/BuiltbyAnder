@@ -11,7 +11,7 @@
        Defines shared colors, fonts, sizing rules, and the page background. */
     @font-face {
       font-family: "PS3 Interface";
-      src: url("PS3 Icons + Sounds/Icons/systematic/font.ttf") format("truetype");
+      src: url("assets/ps3/Icons/systematic/font.ttf") format("truetype");
       font-display: swap;
     }
 
@@ -55,7 +55,7 @@
     .boot-logo {
       width: min(56vw, 330px);
       filter: brightness(0) invert(1) drop-shadow(0 0 18px rgba(255,255,255,.25));
-      animation: logo-appear 2.7s ease forwards;
+      animation: logo-appear 4.8s ease forwards;
     }
 
     .boot-name {
@@ -511,7 +511,7 @@
     <div class="user-select-wrap">
       <p>Select a user</p>
       <button class="user-card" id="enter-user" type="button">
-        <span class="user-avatar"><img src="PS3 Icons + Sounds/Icons/systematic/png/menu_user.png" alt=""></span>
+        <span class="user-avatar"><img src="assets/ps3/Icons/systematic/png/menu_user.png" alt=""></span>
         <span><span class="user-name">Ander Ayala</span><span class="user-status">Portfolio · New York, NY</span></span>
       </button>
     </div>
@@ -528,18 +528,18 @@
     <nav class="xmb-menu" aria-label="Portfolio apps">
       <div class="menu-track">
         <button class="app-button top-app selected" data-app="about" aria-label="Open User Profile">
-          <span class="app-icon" aria-hidden="true"><img src="PS3 Icons + Sounds/Icons/systematic/png/menu_user.png" alt=""></span><span class="app-label">Users</span>
+          <span class="app-icon" aria-hidden="true"><img src="assets/ps3/Icons/systematic/png/menu_user.png" alt=""></span><span class="app-label">Users</span>
         </button>
         <div class="menu-group social-group">
           <button class="app-button top-app" data-category="socials" aria-label="Show Socials">
-            <span class="app-icon" aria-hidden="true"><img src="PS3 Icons + Sounds/Icons/systematic/png/menu_network.png" alt=""></span><span class="app-label">Socials</span>
+            <span class="app-icon" aria-hidden="true"><img src="assets/ps3/Icons/systematic/png/menu_network.png" alt=""></span><span class="app-label">Socials</span>
           </button>
           <div class="social-submenu" aria-label="Social profiles">
             <button class="social-button active" data-app="github" data-title="GitHub" data-description="View my repositories, experiments, and current development projects." data-url="https://github.com/Anderiscool-hash" aria-label="Select GitHub">
-              <span class="social-icon" aria-hidden="true"><img src="PS3 Icons + Sounds/Icons/systematic/png/Source Code - Various.png" alt=""></span><span>GitHub</span>
+              <span class="social-icon" aria-hidden="true"><img src="assets/ps3/Icons/systematic/png/file.png" alt=""></span><span>GitHub</span>
             </button>
             <button class="social-button" data-app="linkedin" data-title="LinkedIn" data-description="See my professional experience, education, and connections." data-url="https://www.linkedin.com/in/ander-ayala-509524331/" aria-label="Select LinkedIn">
-              <span class="social-icon" aria-hidden="true"><img src="PS3 Icons + Sounds/Icons/systematic/png/menu_user.png" alt=""></span><span>LinkedIn</span>
+              <span class="social-icon" aria-hidden="true"><img src="assets/ps3/Icons/systematic/png/menu_user.png" alt=""></span><span>LinkedIn</span>
             </button>
           </div>
           <aside class="social-preview" aria-live="polite">
@@ -549,25 +549,28 @@
           </aside>
         </div>
         <button class="app-button top-app" data-app="experience" aria-label="Open Experience">
-          <span class="app-icon" aria-hidden="true"><img src="PS3 Icons + Sounds/Icons/systematic/png/folder.png" alt=""></span><span class="app-label">Experience</span>
+          <span class="app-icon" aria-hidden="true"><img src="assets/ps3/Icons/systematic/png/folder.png" alt=""></span><span class="app-label">Experience</span>
         </button>
         <button class="app-button top-app" data-app="projects" aria-label="Open Projects">
-          <span class="app-icon" aria-hidden="true"><img src="PS3 Icons + Sounds/Icons/systematic/png/Source Code - Various.png" alt=""></span><span class="app-label">Projects</span>
+          <span class="app-icon" aria-hidden="true"><img src="assets/ps3/Icons/systematic/png/file.png" alt=""></span><span class="app-label">Projects</span>
         </button>
         <button class="app-button top-app" data-app="education" aria-label="Open Education">
-          <span class="app-icon" aria-hidden="true"><img src="PS3 Icons + Sounds/Icons/systematic/png/menu_achievements.png" alt=""></span><span class="app-label">Education</span>
+          <span class="app-icon" aria-hidden="true"><img src="assets/ps3/Icons/systematic/png/menu_achievements.png" alt=""></span><span class="app-label">Education</span>
         </button>
         <button class="app-button top-app" data-app="skills" aria-label="Open Skills">
-          <span class="app-icon" aria-hidden="true"><img src="PS3 Icons + Sounds/Icons/systematic/png/core.png" alt=""></span><span class="app-label">Skills</span>
+          <span class="app-icon" aria-hidden="true"><img src="assets/ps3/Icons/systematic/png/core.png" alt=""></span><span class="app-label">Skills</span>
         </button>
         <button class="app-button top-app" data-app="settings" aria-label="Open Settings">
-          <span class="app-icon" aria-hidden="true"><img src="PS3 Icons + Sounds/Icons/systematic/png/settings.png" alt=""></span><span class="app-label">Settings</span>
+          <span class="app-icon" aria-hidden="true"><img src="assets/ps3/Icons/systematic/png/settings.png" alt=""></span><span class="app-label">Settings</span>
         </button>
         <button class="app-button top-app" data-app="contact" aria-label="Open Contact">
-          <span class="app-icon" aria-hidden="true"><img src="PS3 Icons + Sounds/Icons/systematic/png/menu_notifications.png" alt=""></span><span class="app-label">Contact</span>
+          <span class="app-icon" aria-hidden="true"><img src="assets/ps3/Icons/systematic/png/menu_notifications.png" alt=""></span><span class="app-label">Contact</span>
         </button>
         <button class="app-button top-app" data-app="updates" aria-label="Open Update Log">
-          <span class="app-icon" aria-hidden="true"><img src="PS3 Icons + Sounds/Icons/systematic/png/history.png" alt=""></span><span class="app-label">Updates</span>
+          <span class="app-icon" aria-hidden="true"><img src="assets/ps3/Icons/systematic/png/history.png" alt=""></span><span class="app-label">Updates</span>
+        </button>
+        <button class="app-button top-app" data-app="credits" aria-label="Open Credits">
+          <span class="app-icon" aria-hidden="true"><img src="assets/ps3/Icons/systematic/png/menu_info.png" alt=""></span><span class="app-label">Credits</span>
         </button>
       </div>
       <p class="controls">← → Navigate &nbsp; · &nbsp; Enter Open &nbsp; · &nbsp; Esc Back</p>
@@ -616,7 +619,7 @@
 
       // # PS3 SOUND EFFECTS
       // Preloads the uploaded navigation sounds and plays them only after user input.
-      const soundRoot = 'PS3 Icons + Sounds/oggs/';
+      const soundRoot = 'assets/ps3/oggs/';
       const sounds = {
         move: new Audio(`${soundRoot}up.ogg`),
         select: new Audio(`${soundRoot}ok.ogg`),
@@ -649,6 +652,7 @@
         settings: `<h2 id="app-title">Settings</h2><p>Personalize the XMB background. Changes are saved on this device.</p><div class="settings-list"><div class="setting-row"><label for="background-color">Background color</label><input id="background-color" type="color"><output class="setting-value" id="color-value"></output></div><div class="setting-row"><label for="wave-speed">Wave speed</label><input id="wave-speed" type="range" min="0" max="1.2" step="0.01"><output class="setting-value" id="wave-speed-value"></output></div><div class="setting-row"><label for="particle-speed">Particle speed</label><input id="particle-speed" type="range" min="0" max="3" step="0.01"><output class="setting-value" id="particle-speed-value"></output></div><div class="setting-row"><label for="wave-intensity">Wave intensity</label><input id="wave-intensity" type="range" min="0" max="0.6" step="0.01"><output class="setting-value" id="wave-intensity-value"></output></div><div class="setting-row"><label for="particles-visible">Show particles</label><input class="setting-toggle" id="particles-visible" type="checkbox"><output class="setting-value" id="particles-value"></output></div></div><button class="reset-settings" id="reset-settings" type="button">Reset to defaults</button>`,
         contact: `<h2 id="app-title">Contact</h2><p>Based in New York, NY and open to technology, operations, and cybersecurity opportunities.</p><div class="project-grid"><article class="tile"><h3>Email &amp; Phone</h3><p><a href="mailto:ayalaander231@gmail.com">ayalaander231@gmail.com</a><br><a href="tel:+19294988442">929-498-8442</a></p></article><article class="tile"><h3>Profiles</h3><p><a href="https://github.com/Anderiscool-hash" target="_blank" rel="noreferrer">GitHub</a> &nbsp; · &nbsp; <a href="https://www.linkedin.com/in/ander-ayala-509524331/" target="_blank" rel="noreferrer">LinkedIn</a></p></article><article class="tile"><h3>Resume</h3><p><a href="Ander_Ayala_Resume.pdf" target="_blank">View resume</a> &nbsp; · &nbsp; <a href="Ander_Ayala_Resume.pdf" download>Download PDF</a></p></article></div>`,
         updates: `<h2 id="app-title">Update Log</h2><p>Changes appear here only when a new website update is intentionally logged.</p><div id="update-list"><p>Loading updates…</p></div>`,
+        credits: `<h2 id="app-title">Credits</h2><p>This portfolio builds on open-source work. Thank you to the creators and contributors.</p><div class="project-grid"><article class="tile"><h3>PlayStation 3 XMB Recreation</h3><p>Wave, spline, particle, and gradient foundation by linkev, used under the MIT License.</p><p><a href="https://github.com/linkev/PlayStation-3-XMB" target="_blank" rel="noreferrer">Source repository ↗</a></p></article><article class="tile"><h3>RetroArch Assets</h3><p>Systematic icons, font, and menu sound assets from libretro/retroarch-assets, licensed CC BY 4.0.</p><p><a href="https://github.com/libretro/retroarch-assets" target="_blank" rel="noreferrer">Source repository ↗</a> · <a href="https://github.com/libretro/retroarch-assets/blob/master/COPYING" target="_blank" rel="noreferrer">License ↗</a></p></article><article class="tile"><h3>Systematic Theme</h3><p>The RetroArch Systematic theme credits its source files to baxysquare/baxy-retroarch-themes.</p><p><a href="https://github.com/baxysquare/baxy-retroarch-themes" target="_blank" rel="noreferrer">Source repository ↗</a></p></article><article class="tile"><h3>Trademark Notice</h3><p>PlayStation and PS3 are trademarks of Sony Interactive Entertainment. This independent portfolio is not affiliated with or endorsed by Sony.</p></article></div>`,
       };
 
       // # UPDATE LOG LOADER
@@ -796,7 +800,7 @@
         }, 500);
       }
 
-      setTimeout(finishBoot, matchMedia('(prefers-reduced-motion: reduce)').matches ? 100 : 2850);
+      setTimeout(finishBoot, matchMedia('(prefers-reduced-motion: reduce)').matches ? 100 : 5000);
       boot.addEventListener('click', finishBoot, { once: true });
       enterUserButton.addEventListener('click', enterPortfolio);
 
