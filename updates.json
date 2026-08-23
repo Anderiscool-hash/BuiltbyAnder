@@ -2,6 +2,16 @@
   "updates": [
     {
       "date": "2026-08-23",
+      "version": "1.0.6",
+      "title": "Dedicated resume app",
+      "changes": [
+        "Added a Resume app to the main XMB menu",
+        "Added options to view the resume in a new tab or download the PDF",
+        "Used the matching resume icon from the credited PS3 asset collection"
+      ]
+    },
+    {
+      "date": "2026-08-23",
       "version": "1.0.5",
       "title": "Cleaner XMB interface",
       "changes": [
