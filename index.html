@@ -516,6 +516,9 @@
             <button class="social-button" data-app="linkedin" data-title="LinkedIn" data-description="See my professional experience, education, and connections." data-url="https://www.linkedin.com/in/ander-ayala-509524331/" aria-label="Select LinkedIn">
               <span class="social-icon" aria-hidden="true"><img src="assets/ps3/Icons/systematic/png/menu_user.png" alt=""></span><span>LinkedIn</span>
             </button>
+            <button class="social-button" data-app="resume" data-title="Resume" data-description="View or download my education, experience, skills, and contact information." data-url="Ander_Ayala_Resume.pdf" data-link-label="View resume ↗" aria-label="Select Resume">
+              <span class="social-icon" aria-hidden="true"><img src="assets/ps3/Icons/systematic/png/resume.png" alt=""></span><span>Resume</span>
+            </button>
           </div>
           <aside class="social-preview" aria-live="polite">
             <h2 id="social-preview-title">GitHub</h2>
@@ -534,9 +537,6 @@
         </button>
         <button class="app-button top-app" data-app="skills" aria-label="Open Skills">
           <span class="app-icon" aria-hidden="true"><img src="assets/ps3/Icons/systematic/png/core.png" alt=""></span><span class="app-label">Skills</span>
-        </button>
-        <button class="app-button top-app" data-app="resume" aria-label="Open Resume">
-          <span class="app-icon" aria-hidden="true"><img src="assets/ps3/Icons/systematic/png/resume.png" alt=""></span><span class="app-label">Resume</span>
         </button>
         <button class="app-button top-app" data-app="settings" aria-label="Open Settings">
           <span class="app-icon" aria-hidden="true"><img src="assets/ps3/Icons/systematic/png/settings.png" alt=""></span><span class="app-label">Settings</span>
@@ -836,6 +836,7 @@
         socialPreviewTitle.textContent = button.dataset.title;
         socialPreviewDescription.textContent = button.dataset.description;
         socialPreviewLink.href = button.dataset.url;
+        socialPreviewLink.textContent = button.dataset.linkLabel || 'Open profile ↗';
         if (changed) playSound('move');
       }
 

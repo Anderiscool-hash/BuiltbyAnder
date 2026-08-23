@@ -2,6 +2,16 @@
   "updates": [
     {
       "date": "2026-08-23",
+      "version": "1.0.7",
+      "title": "Resume added to Socials",
+      "changes": [
+        "Moved Resume into the Socials submenu beneath GitHub and LinkedIn",
+        "Added a resume preview with a direct link to the PDF",
+        "Removed the separate Resume category from the main XMB row"
+      ]
+    },
+    {
+      "date": "2026-08-23",
       "version": "1.0.6",
       "title": "Dedicated resume app",
       "changes": [
