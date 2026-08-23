@@ -474,6 +474,7 @@
     .resume-launch-content { display: grid; justify-items: center; gap: 1.2rem; }
     .resume-launch-icon { width: 82px; filter: brightness(0) invert(1); animation: resume-icon-pulse 1.8s ease-in-out infinite; }
     .resume-launch-title { margin: 0; font-size: 1.15rem; font-weight: 300; letter-spacing: .08em; }
+    .resume-launch-fact { width: min(80vw, 520px); min-height: 2.8em; margin: 0; color: rgba(255,255,255,.68); font-size: .86rem; line-height: 1.6; text-align: center; transition: opacity .2s ease; }
     .resume-loading-dots { display: flex; gap: .55rem; }
     .resume-loading-dots span { width: 7px; height: 7px; border-radius: 50%; background: #fff; opacity: .2; animation: resume-dot 1.2s ease-in-out infinite; }
     .resume-loading-dots span:nth-child(2) { animation-delay: .2s; }
@@ -626,6 +627,7 @@
     <div class="resume-launch-content">
       <img class="resume-launch-icon" src="assets/ps3/Icons/systematic/png/resume.png" alt="">
       <p class="resume-launch-title">Loading Resume</p>
+      <p class="resume-launch-fact" id="resume-launch-fact"></p>
       <div class="resume-loading-dots" aria-hidden="true"><span></span><span></span><span></span></div>
     </div>
   </section>
@@ -674,6 +676,7 @@
       const appContent = document.getElementById('app-content');
       const backButton = document.getElementById('back-button');
       const resumeLaunch = document.getElementById('resume-launch');
+      const resumeLaunchFact = document.getElementById('resume-launch-fact');
       const resumeViewer = document.getElementById('resume-viewer');
       const resumeFrame = resumeViewer.querySelector('iframe');
       const closeResumeButton = document.getElementById('close-resume');
@@ -681,6 +684,24 @@
       let portfolioEntered = false;
       let bootFinished = false;
       let resumeLaunchTimer;
+      let resumeFactTimer;
+      const resumeFacts = [
+        'Ander is fluent in both English and Spanish.',
+        'Ander studies Computer Science and Cybersecurity at John Jay College.',
+        'Ander combines technical problem-solving with hands-on operations experience.',
+        'Ander has worked with inventory systems, equipment troubleshooting, and workflow improvements.',
+        'Ander experiments with virtual machines, automation, and system configuration.',
+        'Ander is based in New York City.',
+        'This portfolio was designed after the PlayStation 3 XMB interface.'
+      ];
+      let previousFactIndex = -1;
+
+      function showRandomResumeFact() {
+        let nextIndex;
+        do { nextIndex = Math.floor(Math.random() * resumeFacts.length); } while (nextIndex === previousFactIndex && resumeFacts.length > 1);
+        previousFactIndex = nextIndex;
+        resumeLaunchFact.textContent = resumeFacts[nextIndex];
+      }
 
       // # PS3 SOUND EFFECTS
       // Preloads the uploaded navigation sounds and plays them only after user input.
@@ -890,10 +911,14 @@
         if (name === 'resume') {
           appView.classList.remove('open');
           clearTimeout(resumeLaunchTimer);
+          clearInterval(resumeFactTimer);
+          showRandomResumeFact();
+          resumeFactTimer = setInterval(showRandomResumeFact, 1100);
           resumeLaunch.classList.add('active');
           resumeLaunch.setAttribute('aria-hidden', 'false');
           const launchDelay = matchMedia('(prefers-reduced-motion: reduce)').matches ? 300 : 2400;
           resumeLaunchTimer = setTimeout(() => {
+            clearInterval(resumeFactTimer);
             if (resumeFrame.src === 'about:blank') resumeFrame.src = resumeFrame.dataset.src;
             resumeViewer.classList.add('open');
             resumeViewer.setAttribute('aria-hidden', 'false');
@@ -918,6 +943,7 @@
 
       function closeResume() {
         clearTimeout(resumeLaunchTimer);
+        clearInterval(resumeFactTimer);
         playSound('back');
         resumeLaunch.classList.remove('active');
         resumeLaunch.setAttribute('aria-hidden', 'true');

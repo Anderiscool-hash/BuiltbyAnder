@@ -2,6 +2,15 @@
   "updates": [
     {
       "date": "2026-08-23",
+      "version": "1.0.10",
+      "title": "Random resume loading facts",
+      "changes": [
+        "Added randomized personal and portfolio facts to the Resume launch screen",
+        "Facts rotate during loading without repeating consecutively"
+      ]
+    },
+    {
+      "date": "2026-08-23",
       "version": "1.0.9",
       "title": "PS3-style resume launch",
       "changes": [
