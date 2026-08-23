@@ -2,6 +2,17 @@
   "updates": [
     {
       "date": "2026-08-23",
+      "version": "1.0.9",
+      "title": "PS3-style resume launch",
+      "changes": [
+        "Added a game-style black loading screen before the resume opens",
+        "Added an animated resume icon and loading indicator",
+        "Deferred the PDF until Resume is selected to improve initial page loading",
+        "Added Escape support for cancelling the launch sequence"
+      ]
+    },
+    {
+      "date": "2026-08-23",
       "version": "1.0.8",
       "title": "Resume viewer popup",
       "changes": [

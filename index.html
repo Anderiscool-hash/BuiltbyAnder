@@ -454,6 +454,33 @@
 
     .back-button:hover, .back-button:focus-visible { background: rgba(255,255,255,.2); outline: 2px solid white; }
 
+    /* # RESUME LAUNCH SCREEN
+       Briefly replaces the XMB with a dark game-style loading sequence. */
+    .resume-launch {
+      position: fixed;
+      inset: 0;
+      z-index: 30;
+      display: grid;
+      place-items: center;
+      color: #fff;
+      background: #000;
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+      transition: opacity .45s ease, visibility .45s;
+    }
+
+    .resume-launch.active { opacity: 1; visibility: visible; pointer-events: auto; }
+    .resume-launch-content { display: grid; justify-items: center; gap: 1.2rem; }
+    .resume-launch-icon { width: 82px; filter: brightness(0) invert(1); animation: resume-icon-pulse 1.8s ease-in-out infinite; }
+    .resume-launch-title { margin: 0; font-size: 1.15rem; font-weight: 300; letter-spacing: .08em; }
+    .resume-loading-dots { display: flex; gap: .55rem; }
+    .resume-loading-dots span { width: 7px; height: 7px; border-radius: 50%; background: #fff; opacity: .2; animation: resume-dot 1.2s ease-in-out infinite; }
+    .resume-loading-dots span:nth-child(2) { animation-delay: .2s; }
+    .resume-loading-dots span:nth-child(3) { animation-delay: .4s; }
+    @keyframes resume-icon-pulse { 0%, 100% { opacity: .55; transform: scale(.96); } 50% { opacity: 1; transform: scale(1); } }
+    @keyframes resume-dot { 0%, 100% { opacity: .2; transform: scale(.75); } 50% { opacity: 1; transform: scale(1); } }
+
     /* # RESUME POPUP
        Presents the PDF in a focused, full-screen viewer above the XMB. */
     .resume-viewer {
@@ -593,6 +620,16 @@
     </article>
   </section>
 
+  <!-- # RESUME LAUNCH SCREEN
+       Mimics the pause between selecting a PS3 game and entering it. -->
+  <section class="resume-launch" id="resume-launch" role="status" aria-live="polite" aria-hidden="true">
+    <div class="resume-launch-content">
+      <img class="resume-launch-icon" src="assets/ps3/Icons/systematic/png/resume.png" alt="">
+      <p class="resume-launch-title">Loading Resume</p>
+      <div class="resume-loading-dots" aria-hidden="true"><span></span><span></span><span></span></div>
+    </div>
+  </section>
+
   <!-- # RESUME VIEWER
        Opens the resume over the XMB while keeping view and download controls visible. -->
   <section class="resume-viewer" id="resume-viewer" role="dialog" aria-modal="true" aria-labelledby="resume-viewer-title" aria-hidden="true">
@@ -605,7 +642,7 @@
           <button id="close-resume" type="button" aria-label="Close resume">Close</button>
         </div>
       </header>
-      <iframe src="Ander_Ayala_Resume.pdf#view=FitH" title="Ander Ayala resume PDF"></iframe>
+      <iframe src="about:blank" data-src="Ander_Ayala_Resume.pdf#view=FitH" title="Ander Ayala resume PDF"></iframe>
     </div>
   </section>
 
@@ -636,11 +673,14 @@
       const appView = document.getElementById('app-view');
       const appContent = document.getElementById('app-content');
       const backButton = document.getElementById('back-button');
+      const resumeLaunch = document.getElementById('resume-launch');
       const resumeViewer = document.getElementById('resume-viewer');
+      const resumeFrame = resumeViewer.querySelector('iframe');
       const closeResumeButton = document.getElementById('close-resume');
       let selectedIndex = 0;
       let portfolioEntered = false;
       let bootFinished = false;
+      let resumeLaunchTimer;
 
       // # PS3 SOUND EFFECTS
       // Preloads the uploaded navigation sounds and plays them only after user input.
@@ -849,9 +889,18 @@
         playSound('select');
         if (name === 'resume') {
           appView.classList.remove('open');
-          resumeViewer.classList.add('open');
-          resumeViewer.setAttribute('aria-hidden', 'false');
-          closeResumeButton.focus();
+          clearTimeout(resumeLaunchTimer);
+          resumeLaunch.classList.add('active');
+          resumeLaunch.setAttribute('aria-hidden', 'false');
+          const launchDelay = matchMedia('(prefers-reduced-motion: reduce)').matches ? 300 : 2400;
+          resumeLaunchTimer = setTimeout(() => {
+            if (resumeFrame.src === 'about:blank') resumeFrame.src = resumeFrame.dataset.src;
+            resumeViewer.classList.add('open');
+            resumeViewer.setAttribute('aria-hidden', 'false');
+            resumeLaunch.classList.remove('active');
+            resumeLaunch.setAttribute('aria-hidden', 'true');
+            closeResumeButton.focus();
+          }, launchDelay);
           return;
         }
         appContent.innerHTML = apps[name];
@@ -868,7 +917,10 @@
       }
 
       function closeResume() {
+        clearTimeout(resumeLaunchTimer);
         playSound('back');
+        resumeLaunch.classList.remove('active');
+        resumeLaunch.setAttribute('aria-hidden', 'true');
         resumeViewer.classList.remove('open');
         resumeViewer.setAttribute('aria-hidden', 'true');
         buttons[selectedIndex].focus();
@@ -922,6 +974,7 @@
       // Supports arrow navigation, Enter to open, and Escape to return.
       document.addEventListener('keydown', event => {
         if (!portfolioEntered) return;
+        if (event.key === 'Escape' && resumeLaunch.classList.contains('active')) { closeResume(); return; }
         if (event.key === 'Escape' && resumeViewer.classList.contains('open')) { closeResume(); return; }
         if (event.key === 'Escape' && appView.classList.contains('open')) { closeApp(); return; }
         const socialIndex = socialButtons.indexOf(document.activeElement);
