@@ -10,7 +10,14 @@ npm install
 npm run dev
 ```
 
-Open the local address printed by the development server and navigate to `/main.html`.
+Open the local address printed by the development server. The portfolio now loads directly at `/`, matching its Vercel deployment path.
+
+## Deploy on Vercel
+
+- Import `Anderiscool-hash/ps3-portfolio`.
+- Set **Framework Preset** to `Other`.
+- Keep **Root Directory** at the repository root (`./`).
+- Leave **Build Command** and **Output Directory** empty.
 
 ## Log a website update
 

@@ -2,6 +2,15 @@
   "updates": [
     {
       "date": "2026-08-23",
+      "version": "1.0.3",
+      "title": "Vercel deployment support",
+      "changes": [
+        "Renamed the homepage to index.html so the portfolio loads at the root URL",
+        "Updated project metadata and deployment instructions for Vercel"
+      ]
+    },
+    {
+      "date": "2026-08-23",
       "version": "1.0.2",
       "title": "Automatic update log after login",
       "changes": [
