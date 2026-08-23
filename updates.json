@@ -1,0 +1,34 @@
+{
+  "updates": [
+    {
+      "date": "2026-08-23",
+      "version": "1.0.2",
+      "title": "Automatic update log after login",
+      "changes": [
+        "Selecting the Ander Ayala user now opens the Updates tab automatically",
+        "The latest release notes load immediately after entering the XMB"
+      ]
+    },
+    {
+      "date": "2026-08-23",
+      "version": "1.0.1",
+      "title": "User profiles and login flow",
+      "changes": [
+        "Added a PS3-style user-selection screen after the boot logo",
+        "Added a Users tab with an About Me profile based on the resume",
+        "Updated XMB navigation to account for the new first category"
+      ]
+    },
+    {
+      "date": "2026-08-22",
+      "version": "1.0.0",
+      "title": "Portfolio launch",
+      "changes": [
+        "Built the PS3-inspired XMB portfolio interface",
+        "Added resume-based experience, education, skills, and contact sections",
+        "Added social profiles, visitor settings, PS3 icons, fonts, and sounds",
+        "Added interactive mini demos based on public GitHub projects"
+      ]
+    }
+  ]
+}

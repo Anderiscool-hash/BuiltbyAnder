@@ -1,0 +1,16 @@
+{
+  "name": "playstation-3-xmb",
+  "version": "2.0.0",
+  "description": "Ander's PS3-inspired portfolio website",
+  "main": "../main.html",
+  "scripts": {
+    "dev": "serve .. -p 8000",
+    "start": "serve .. -p 8000",
+    "log-update": "node scripts/add-update.js"
+  },
+  "author": "Ander Ayala",
+  "private": true,
+  "devDependencies": {
+    "serve": "^14.2.5"
+  }
+}

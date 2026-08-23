@@ -1,0 +1,969 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#07152f">
+  <meta name="description" content="Ander Ayala's interactive portfolio">
+  <title>Ander Ayala | Portfolio</title>
+  <style>
+    /* # GLOBAL SETUP
+       Defines shared colors, fonts, sizing rules, and the page background. */
+    @font-face {
+      font-family: "PS3 Interface";
+      src: url("PS3 Icons + Sounds/Icons/systematic/font.ttf") format("truetype");
+      font-display: swap;
+    }
+
+    :root {
+      color-scheme: dark;
+      font-family: "PS3 Interface", "Segoe UI", Arial, sans-serif;
+      --glass: rgba(10, 24, 50, .72);
+      --line: rgba(255, 255, 255, .22);
+    }
+
+    * { box-sizing: border-box; }
+    html, body { width: 100%; min-height: 100%; }
+    body { margin: 0; overflow: hidden; background: #030a18; color: white; }
+    button, a { font: inherit; }
+
+    /* # ANIMATED BACKGROUND
+       Keeps the WebGL wave canvas behind the entire interface. */
+    #wave-canvas {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      display: block;
+      width: 100%;
+      height: 100%;
+    }
+
+    /* # BOOT SEQUENCE
+       Covers the page with black, animates the logo, then fades away. */
+    .boot-screen {
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      display: grid;
+      place-items: center;
+      background: #000;
+      transition: opacity 1s ease, visibility 1s;
+    }
+
+    .boot-screen.finished { opacity: 0; visibility: hidden; pointer-events: none; }
+
+    .boot-logo {
+      width: min(56vw, 330px);
+      filter: brightness(0) invert(1) drop-shadow(0 0 18px rgba(255,255,255,.25));
+      animation: logo-appear 2.7s ease forwards;
+    }
+
+    .boot-name {
+      position: absolute;
+      bottom: 8vh;
+      margin: 0;
+      color: rgba(255,255,255,.48);
+      font-size: .72rem;
+      letter-spacing: .25em;
+      text-transform: uppercase;
+      animation: name-appear 2.5s ease forwards;
+    }
+
+    @keyframes logo-appear {
+      0%, 15% { opacity: 0; transform: scale(.96); }
+      42%, 76% { opacity: 1; transform: scale(1); }
+      100% { opacity: 0; transform: scale(1.025); }
+    }
+
+    @keyframes name-appear { 0%, 55% { opacity: 0; } 75% { opacity: 1; } 100% { opacity: 0; } }
+
+    /* # USER SELECTION
+       Appears after boot and requires the visitor to choose Ander's profile. */
+    .user-screen {
+      position: fixed;
+      inset: 0;
+      z-index: 50;
+      display: grid;
+      place-items: center;
+      color: #fff;
+      opacity: 0;
+      visibility: hidden;
+      background: rgba(2, 8, 20, .12);
+      transition: opacity .7s ease, visibility .7s;
+    }
+
+    .user-screen.active { opacity: 1; visibility: visible; }
+
+    .user-select-wrap { text-align: center; }
+    .user-select-wrap > p { margin: 0 0 1.5rem; color: rgba(255,255,255,.68); font-size: .78rem; letter-spacing: .12em; text-transform: uppercase; }
+
+    .user-card {
+      display: grid;
+      grid-template-columns: 72px auto;
+      gap: 1rem;
+      align-items: center;
+      padding: .7rem 1.4rem .7rem .7rem;
+      border: 1px solid transparent;
+      border-radius: 10px;
+      color: #fff;
+      background: transparent;
+      cursor: pointer;
+      text-align: left;
+      transition: background .2s, border-color .2s, transform .2s;
+    }
+
+    .user-card:hover, .user-card:focus-visible {
+      outline: none;
+      border-color: rgba(255,255,255,.26);
+      background: linear-gradient(90deg, rgba(255,255,255,.18), rgba(255,255,255,.02));
+      transform: scale(1.04);
+    }
+
+    .user-avatar {
+      display: grid;
+      place-items: center;
+      width: 72px;
+      aspect-ratio: 1;
+      border-radius: 8px;
+      background: rgba(255,255,255,.16);
+      box-shadow: inset 0 1px rgba(255,255,255,.32), 0 8px 22px rgba(0,0,0,.2);
+    }
+
+    .user-avatar img { width: 62%; height: 62%; object-fit: contain; }
+    .user-name { display: block; font-size: 1.2rem; }
+    .user-status { display: block; margin-top: .25rem; color: rgba(255,255,255,.6); font-size: .72rem; }
+
+    /* # MAIN XMB INTERFACE
+       Styles the header, welcome text, horizontal app menu, and selected icon. */
+    .interface {
+      position: relative;
+      z-index: 2;
+      min-height: 100vh;
+      opacity: 0;
+      transition: opacity 1s ease;
+      text-shadow: 0 2px 12px rgba(0,0,0,.5);
+    }
+
+    .interface.ready { opacity: 1; }
+
+    .top-bar {
+      position: fixed;
+      top: 4vh;
+      left: 5vw;
+      right: 5vw;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: clamp(.75rem, 1.3vw, .95rem);
+      letter-spacing: .06em;
+    }
+
+    .brand { font-weight: 300; text-transform: uppercase; }
+    .status { display: flex; align-items: center; gap: 1rem; }
+    .online-dot { width: 7px; height: 7px; border-radius: 50%; background: #75ffb0; box-shadow: 0 0 10px #75ffb0; }
+
+    .xmb-menu {
+      position: fixed;
+      top: 37%;
+      left: 0;
+      width: 100%;
+      transition: transform .38s cubic-bezier(.22, .8, .3, 1);
+    }
+
+    /* # XMB VERTICAL SHIFT
+       Pans the entire menu upward so child apps occupy the selection row. */
+    .interface.submenu-active .xmb-menu { transform: translateY(-6.8rem); }
+
+    .menu-track {
+      display: flex;
+      gap: clamp(1.5rem, 4vw, 4.2rem);
+      align-items: flex-start;
+      padding: 1.4rem 11vw 3rem;
+      overflow-x: auto;
+      scrollbar-width: none;
+      scroll-behavior: smooth;
+    }
+
+    .menu-track::-webkit-scrollbar { display: none; }
+
+    /* # VERTICAL SOCIALS SUBMENU
+       Mimics the PS3 XMB by revealing child apps below the selected category. */
+    .menu-group {
+      position: relative;
+      flex: 0 0 auto;
+      width: clamp(72px, 9vw, 108px);
+    }
+
+    .menu-group > .app-button { width: 100%; }
+
+    .social-submenu {
+      display: grid;
+      gap: .8rem;
+      justify-items: center;
+      margin-top: 1.15rem;
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(-12px);
+      transition: opacity .22s ease, transform .22s ease, visibility .22s;
+    }
+
+    .social-group:hover .social-submenu,
+    .social-group:focus-within .social-submenu {
+      opacity: 1;
+      visibility: visible;
+      transform: none;
+    }
+
+    .social-button {
+      position: relative;
+      display: grid;
+      grid-template-columns: 45px max-content;
+      gap: .7rem;
+      align-items: center;
+      padding: 0;
+      border: 0;
+      color: rgba(255,255,255,.7);
+      background: transparent;
+      cursor: pointer;
+      text-decoration: none;
+    }
+
+    .social-icon {
+      display: grid;
+      place-items: center;
+      width: 45px;
+      aspect-ratio: 1;
+      border: 1px solid rgba(255,255,255,.28);
+      border-radius: 12px;
+      background: rgba(255,255,255,.12);
+      box-shadow: inset 0 1px rgba(255,255,255,.25);
+      font-size: .85rem;
+      font-weight: 700;
+    }
+
+    .social-icon img { width: 66%; height: 66%; object-fit: contain; }
+
+    .social-button span:last-child { opacity: 0; font-size: .78rem; transition: opacity .2s; }
+    .social-button:hover, .social-button:focus-visible { color: #fff; outline: none; filter: drop-shadow(0 0 9px rgba(255,255,255,.45)); }
+    .social-button:hover span:last-child, .social-button:focus-visible span:last-child { opacity: 1; }
+
+    .social-button.active::before {
+      content: "◀";
+      position: absolute;
+      left: -1.1rem;
+      color: rgba(255,255,255,.85);
+      font-size: .65rem;
+    }
+
+    /* # SOCIAL APP PREVIEW
+       Shows PS3-style information to the right of the focused social app. */
+    .social-preview {
+      position: absolute;
+      top: 6.7rem;
+      left: calc(100% + 3.5rem);
+      width: min(38vw, 430px);
+      text-align: left;
+      opacity: 0;
+      visibility: hidden;
+      transform: translateX(-10px);
+      transition: opacity .22s ease, transform .22s ease, visibility .22s;
+      pointer-events: none;
+    }
+
+    .social-group:hover .social-preview,
+    .social-group:focus-within .social-preview {
+      opacity: 1;
+      visibility: visible;
+      transform: none;
+      pointer-events: auto;
+    }
+
+    .social-preview h2 {
+      margin: 0 0 .25rem;
+      font-size: clamp(1rem, 2vw, 1.35rem);
+      font-weight: 400;
+      white-space: nowrap;
+    }
+
+    .social-preview p {
+      margin: 0;
+      color: rgba(255,255,255,.78);
+      font-size: clamp(.72rem, 1.25vw, .9rem);
+      line-height: 1.45;
+    }
+
+    .social-preview-link {
+      display: inline-block;
+      margin-top: .55rem;
+      color: rgba(255,255,255,.9);
+      font-size: .78rem;
+      text-underline-offset: 4px;
+      pointer-events: auto;
+    }
+
+    .app-button {
+      position: relative;
+      z-index: 3;
+      flex: 0 0 auto;
+      width: clamp(72px, 9vw, 108px);
+      padding: 0;
+      border: 0;
+      color: rgba(255,255,255,.58);
+      background: transparent;
+      text-align: center;
+      cursor: pointer;
+      transition: transform .22s ease, color .22s ease, filter .22s ease;
+    }
+
+    .app-icon {
+      display: grid;
+      place-items: center;
+      width: clamp(62px, 7.4vw, 90px);
+      aspect-ratio: 1;
+      margin: auto;
+      border: 1px solid rgba(255,255,255,.32);
+      border-radius: 20%;
+      background: linear-gradient(145deg, rgba(255,255,255,.28), rgba(255,255,255,.05));
+      box-shadow: inset 0 1px rgba(255,255,255,.35), 0 14px 30px rgba(0,0,0,.2);
+      backdrop-filter: blur(6px);
+      font-size: clamp(1.7rem, 3.5vw, 2.8rem);
+    }
+
+    .app-icon img {
+      width: 62%;
+      height: 62%;
+      object-fit: contain;
+      filter: drop-shadow(0 2px 3px rgba(0,0,0,.25));
+    }
+
+    .app-label {
+      display: block;
+      margin-top: .8rem;
+      font-size: clamp(.72rem, 1.3vw, .92rem);
+      white-space: nowrap;
+      opacity: 0;
+      transform: translateY(-5px);
+      transition: opacity .2s, transform .2s;
+    }
+
+    .app-button.selected,
+    .app-button:hover,
+    .app-button:focus-visible {
+      color: #fff;
+      outline: none;
+      filter: drop-shadow(0 0 15px rgba(255,255,255,.45));
+      transform: scale(1.17) translateY(-8px);
+    }
+
+    .app-button.selected .app-label,
+    .app-button:hover .app-label,
+    .app-button:focus-visible .app-label { opacity: 1; transform: none; }
+
+    .controls { padding-left: 11vw; color: rgba(255,255,255,.6); font-size: .72rem; letter-spacing: .06em; }
+
+    /* # SIDE CONTENT PANEL
+       Keeps selected app content beside the XMB instead of using a popup. */
+    .app-view {
+      position: fixed;
+      top: 19vh;
+      right: 5vw;
+      z-index: 5;
+      width: min(46vw, 650px);
+      max-height: 72vh;
+      opacity: 0;
+      visibility: hidden;
+      transform: translateX(35px);
+      pointer-events: none;
+      transition: opacity .3s ease, transform .3s ease, visibility .3s;
+    }
+
+    .app-view.open { opacity: 1; visibility: visible; transform: none; pointer-events: auto; }
+
+    .app-card {
+      width: 100%;
+      max-height: 72vh;
+      overflow: auto;
+      padding: 1rem 1.25rem;
+      border: 0;
+      border-left: 1px solid rgba(255,255,255,.24);
+      border-radius: 0;
+      background: linear-gradient(90deg, rgba(8,20,43,.25), transparent);
+      box-shadow: none;
+    }
+
+    .app-card h2 { margin: 0 0 1rem; font-size: clamp(2rem, 5vw, 3.5rem); font-weight: 300; }
+    .app-card p { color: rgba(255,255,255,.8); line-height: 1.75; }
+    .app-card a { color: #fff; text-underline-offset: 4px; }
+
+    .project-grid, .skill-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 1rem;
+      margin-top: 1.5rem;
+    }
+
+    .tile {
+      padding: 1.15rem;
+      border: 1px solid rgba(255,255,255,.14);
+      border-radius: 14px;
+      background: rgba(255,255,255,.07);
+    }
+
+    .tile h3 { margin: 0 0 .5rem; font-weight: 500; }
+    .tile p { margin: 0; font-size: .88rem; }
+
+    /* # PROJECT MINI DEMOS
+       Provides safe, browser-only versions of selected GitHub project features. */
+    .demo { margin-top: .9rem; padding-top: .9rem; border-top: 1px solid rgba(255,255,255,.13); }
+    .demo-controls { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .55rem; }
+    .demo input, .demo select, .demo button {
+      width: 100%;
+      min-width: 0;
+      padding: .55rem .65rem;
+      border: 1px solid rgba(255,255,255,.2);
+      border-radius: 8px;
+      color: #fff;
+      background: rgba(0,0,0,.2);
+    }
+    .demo option { color: #111; }
+    .demo button { margin-top: .55rem; cursor: pointer; background: rgba(255,255,255,.14); }
+    .demo button:hover, .demo button:focus-visible { background: rgba(255,255,255,.24); outline: 1px solid #fff; }
+    .demo-output { display: block; margin-top: .7rem; color: #b8d3ff; font-size: .82rem; line-height: 1.55; }
+    .demo-list { margin: .65rem 0 0; padding-left: 1.1rem; color: rgba(255,255,255,.78); font-size: .8rem; }
+    .repo-link { display: inline-block; margin-top: .7rem; font-size: .78rem; }
+
+    /* # UPDATE LOG
+       Displays release notes loaded from updates.json; visits never create entries. */
+    .update-entry { padding: 1rem 0; border-bottom: 1px solid rgba(255,255,255,.14); }
+    .update-entry:last-child { border-bottom: 0; }
+    .update-meta { color: rgba(255,255,255,.58); font-size: .75rem; letter-spacing: .05em; }
+    .update-entry h3 { margin: .35rem 0 .55rem; font-weight: 500; }
+    .update-entry ul { margin: 0; padding-left: 1.15rem; color: rgba(255,255,255,.78); line-height: 1.65; font-size: .86rem; }
+
+    /* # SETTINGS CONTROLS
+       Styles the live color picker, sliders, toggle, values, and reset action. */
+    .settings-list { display: grid; gap: 1rem; margin-top: 1.5rem; }
+    .setting-row {
+      display: grid;
+      grid-template-columns: minmax(120px, 1fr) minmax(150px, 2fr) 3.5rem;
+      gap: 1rem;
+      align-items: center;
+      padding: 1rem;
+      border: 1px solid rgba(255,255,255,.14);
+      border-radius: 14px;
+      background: rgba(255,255,255,.06);
+    }
+    .setting-row label { font-size: .9rem; }
+    .setting-row input[type="range"] { width: 100%; accent-color: #8ab4ff; }
+    .setting-row input[type="color"] { width: 100%; height: 2.2rem; padding: 2px; border: 0; border-radius: 8px; background: transparent; cursor: pointer; }
+    .setting-value { color: rgba(255,255,255,.7); font-size: .82rem; text-align: right; }
+    .setting-toggle { justify-self: start; width: 1.2rem; height: 1.2rem; accent-color: #8ab4ff; }
+    .reset-settings { margin-top: 1rem; color: #fff; border: 0; background: transparent; text-decoration: underline; text-underline-offset: 4px; cursor: pointer; }
+
+    .back-button {
+      margin-top: 2rem;
+      padding: .65rem 1.05rem;
+      border: 1px solid rgba(255,255,255,.35);
+      border-radius: 999px;
+      color: #fff;
+      background: rgba(255,255,255,.1);
+      cursor: pointer;
+    }
+
+    .back-button:hover, .back-button:focus-visible { background: rgba(255,255,255,.2); outline: 2px solid white; }
+
+    /* # RESPONSIVE DESIGN
+       Adjusts spacing and menu placement for phone-sized screens. */
+    @media (max-width: 600px) {
+      .xmb-menu { top: 32%; }
+      .menu-track { padding-inline: 8vw; gap: 1.2rem; }
+      .controls { padding-left: 8vw; }
+      .online-label { display: none; }
+      .setting-row { grid-template-columns: 1fr 1.5fr; }
+      .setting-value { grid-column: 2; text-align: left; }
+      .social-preview { left: calc(100% + 1.5rem); width: 52vw; }
+      .app-view { top: 57vh; left: 8vw; right: 8vw; width: auto; max-height: 37vh; }
+      .app-card { max-height: 37vh; }
+    }
+
+    /* # ACCESSIBILITY
+       Minimizes animation when the visitor requests reduced motion. */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; scroll-behavior: auto !important; }
+    }
+  </style>
+</head>
+<body>
+  <!-- # ANIMATED BACKGROUND
+       WebGL draws the PS3-style waves and particles on this canvas. -->
+  <canvas id="wave-canvas" aria-hidden="true"></canvas>
+
+  <!-- # BOOT SCREEN
+       Appears first and is hidden by JavaScript after the logo animation. -->
+  <div class="boot-screen" id="boot-screen" role="status" aria-label="Loading portfolio">
+    <img class="boot-logo" src="PlayStation-3-XMB/ps3xmbwave/ps3.svg" alt="">
+    <p class="boot-name">Ander Ayala</p>
+  </div>
+
+  <!-- # USER LOGIN SCREEN
+       Visitors choose Ander's profile before entering the portfolio XMB. -->
+  <section class="user-screen" id="user-screen" aria-label="Choose a user">
+    <div class="user-select-wrap">
+      <p>Select a user</p>
+      <button class="user-card" id="enter-user" type="button">
+        <span class="user-avatar"><img src="PS3 Icons + Sounds/Icons/systematic/png/menu_user.png" alt=""></span>
+        <span><span class="user-name">Ander Ayala</span><span class="user-status">Portfolio · New York, NY</span></span>
+      </button>
+    </div>
+  </section>
+
+  <!-- # MAIN INTERFACE
+       Contains the status bar, welcome message, and selectable XMB apps. -->
+  <main class="interface" id="interface">
+    <header class="top-bar">
+      <span class="brand">Ander Ayala</span>
+      <span class="status"><span class="online-dot"></span><span class="online-label">Portfolio Online</span><time id="clock"></time></span>
+    </header>
+
+    <nav class="xmb-menu" aria-label="Portfolio apps">
+      <div class="menu-track">
+        <button class="app-button top-app selected" data-app="about" aria-label="Open User Profile">
+          <span class="app-icon" aria-hidden="true"><img src="PS3 Icons + Sounds/Icons/systematic/png/menu_user.png" alt=""></span><span class="app-label">Users</span>
+        </button>
+        <div class="menu-group social-group">
+          <button class="app-button top-app" data-category="socials" aria-label="Show Socials">
+            <span class="app-icon" aria-hidden="true"><img src="PS3 Icons + Sounds/Icons/systematic/png/menu_network.png" alt=""></span><span class="app-label">Socials</span>
+          </button>
+          <div class="social-submenu" aria-label="Social profiles">
+            <button class="social-button active" data-app="github" data-title="GitHub" data-description="View my repositories, experiments, and current development projects." data-url="https://github.com/Anderiscool-hash" aria-label="Select GitHub">
+              <span class="social-icon" aria-hidden="true"><img src="PS3 Icons + Sounds/Icons/systematic/png/Source Code - Various.png" alt=""></span><span>GitHub</span>
+            </button>
+            <button class="social-button" data-app="linkedin" data-title="LinkedIn" data-description="See my professional experience, education, and connections." data-url="https://www.linkedin.com/in/ander-ayala-509524331/" aria-label="Select LinkedIn">
+              <span class="social-icon" aria-hidden="true"><img src="PS3 Icons + Sounds/Icons/systematic/png/menu_user.png" alt=""></span><span>LinkedIn</span>
+            </button>
+          </div>
+          <aside class="social-preview" aria-live="polite">
+            <h2 id="social-preview-title">GitHub</h2>
+            <p id="social-preview-description">View my repositories, experiments, and current development projects.</p>
+            <a class="social-preview-link" id="social-preview-link" href="https://github.com/Anderiscool-hash" target="_blank" rel="noreferrer">Open profile ↗</a>
+          </aside>
+        </div>
+        <button class="app-button top-app" data-app="experience" aria-label="Open Experience">
+          <span class="app-icon" aria-hidden="true"><img src="PS3 Icons + Sounds/Icons/systematic/png/folder.png" alt=""></span><span class="app-label">Experience</span>
+        </button>
+        <button class="app-button top-app" data-app="projects" aria-label="Open Projects">
+          <span class="app-icon" aria-hidden="true"><img src="PS3 Icons + Sounds/Icons/systematic/png/Source Code - Various.png" alt=""></span><span class="app-label">Projects</span>
+        </button>
+        <button class="app-button top-app" data-app="education" aria-label="Open Education">
+          <span class="app-icon" aria-hidden="true"><img src="PS3 Icons + Sounds/Icons/systematic/png/menu_achievements.png" alt=""></span><span class="app-label">Education</span>
+        </button>
+        <button class="app-button top-app" data-app="skills" aria-label="Open Skills">
+          <span class="app-icon" aria-hidden="true"><img src="PS3 Icons + Sounds/Icons/systematic/png/core.png" alt=""></span><span class="app-label">Skills</span>
+        </button>
+        <button class="app-button top-app" data-app="settings" aria-label="Open Settings">
+          <span class="app-icon" aria-hidden="true"><img src="PS3 Icons + Sounds/Icons/systematic/png/settings.png" alt=""></span><span class="app-label">Settings</span>
+        </button>
+        <button class="app-button top-app" data-app="contact" aria-label="Open Contact">
+          <span class="app-icon" aria-hidden="true"><img src="PS3 Icons + Sounds/Icons/systematic/png/menu_notifications.png" alt=""></span><span class="app-label">Contact</span>
+        </button>
+        <button class="app-button top-app" data-app="updates" aria-label="Open Update Log">
+          <span class="app-icon" aria-hidden="true"><img src="PS3 Icons + Sounds/Icons/systematic/png/history.png" alt=""></span><span class="app-label">Updates</span>
+        </button>
+      </div>
+      <p class="controls">← → Navigate &nbsp; · &nbsp; Enter Open &nbsp; · &nbsp; Esc Back</p>
+    </nav>
+  </main>
+
+  <!-- # SIDE APP VIEW
+       Displays selected content to the right without covering the XMB. -->
+  <section class="app-view" id="app-view" role="region" aria-live="polite" aria-labelledby="app-title">
+    <article class="app-card">
+      <div id="app-content"></div>
+      <button class="back-button" id="back-button">← Back to menu</button>
+    </article>
+  </section>
+
+  <!-- # XMB LIBRARIES
+       Loads the existing gradient, wave, and particle drawing code. Order matters. -->
+  <script src="PlayStation-3-XMB/ps3xmbwave/background-gradients-night.js"></script>
+  <script src="PlayStation-3-XMB/ps3xmbwave/background-gradients-day.js"></script>
+  <script src="PlayStation-3-XMB/ps3xmbwave/spline-settings.js"></script>
+  <script src="PlayStation-3-XMB/ps3xmbwave/particles-settings.js"></script>
+  <script src="PlayStation-3-XMB/ps3xmbwave/spline-reverse.js"></script>
+  <script src="PlayStation-3-XMB/ps3xmbwave/spline.js"></script>
+  <script src="PlayStation-3-XMB/ps3xmbwave/particles.js"></script>
+  <script>
+    (() => {
+      // # PAGE ELEMENTS
+      // Finds the HTML elements that JavaScript needs to control.
+      const boot = document.getElementById('boot-screen');
+      const userScreen = document.getElementById('user-screen');
+      const enterUserButton = document.getElementById('enter-user');
+      const main = document.getElementById('interface');
+      const buttons = [...document.querySelectorAll('.top-app')];
+      const socialButtons = [...document.querySelectorAll('.social-button')];
+      const socialCategoryIndex = buttons.findIndex(button => button.dataset.category === 'socials');
+      const updatesCategoryIndex = buttons.findIndex(button => button.dataset.app === 'updates');
+      const socialPreviewTitle = document.getElementById('social-preview-title');
+      const socialPreviewDescription = document.getElementById('social-preview-description');
+      const socialPreviewLink = document.getElementById('social-preview-link');
+      const appView = document.getElementById('app-view');
+      const appContent = document.getElementById('app-content');
+      const backButton = document.getElementById('back-button');
+      let selectedIndex = 0;
+      let portfolioEntered = false;
+      let bootFinished = false;
+
+      // # PS3 SOUND EFFECTS
+      // Preloads the uploaded navigation sounds and plays them only after user input.
+      const soundRoot = 'PS3 Icons + Sounds/oggs/';
+      const sounds = {
+        move: new Audio(`${soundRoot}up.ogg`),
+        select: new Audio(`${soundRoot}ok.ogg`),
+        back: new Audio(`${soundRoot}cancel.ogg`),
+      };
+      Object.values(sounds).forEach(sound => { sound.preload = 'auto'; sound.volume = 0.35; });
+      let audioUnlocked = false;
+      let lastSoundAt = 0;
+      addEventListener('pointerdown', () => { audioUnlocked = true; }, { capture: true, once: true });
+      addEventListener('keydown', () => { audioUnlocked = true; }, { capture: true, once: true });
+
+      function playSound(name) {
+        if (!audioUnlocked || performance.now() - lastSoundAt < 45) return;
+        lastSoundAt = performance.now();
+        const sound = sounds[name];
+        sound.currentTime = 0;
+        sound.play().catch(() => {});
+      }
+
+      // # APP CONTENT
+      // Stores the HTML displayed inside each portfolio app.
+      const apps = {
+        about: `<h2 id="app-title">About Me</h2><p>I’m Ander Ayala, a New York–based Computer Science &amp; Cybersecurity student at John Jay College of Criminal Justice.</p><div class="project-grid"><article class="tile"><h3>My Focus</h3><p>I enjoy building practical systems, solving technical problems, testing new technology, and improving real-world workflows.</p></article><article class="tile"><h3>Current Experience</h3><p>I serve as Operations Lead at La Gran Familia Deli, where I manage inventory, supplier coordination, customer service, equipment upkeep, and process improvements.</p></article><article class="tile"><h3>Technical Background</h3><p>My experience includes security and DVR systems, AI automation experiments in virtual machines, basic scripting, system configuration, mechanical diagnostics, and aviation training.</p></article><article class="tile"><h3>Languages</h3><p>Fluent in English and Spanish.</p></article></div>`,
+        github: `<h2 id="app-title">GitHub</h2><p>Explore my source code, experiments, and open-source projects.</p><div class="tile"><h3>Anderiscool-hash</h3><p>See my repositories and current development work.</p><p><a href="https://github.com/Anderiscool-hash" target="_blank" rel="noreferrer">Open GitHub profile ↗</a></p></div>`,
+        linkedin: `<h2 id="app-title">LinkedIn</h2><p>See my professional experience, education, and connections.</p><div class="tile"><h3>Connect with Ander</h3><p><a href="https://www.linkedin.com/in/ander-ayala-509524331/" target="_blank" rel="noreferrer">Open LinkedIn profile ↗</a></p></div>`,
+        experience: `<h2 id="app-title">Experience</h2><p>Practical experience combining operations, technology, and hands-on problem solving.</p><div class="project-grid"><article class="tile"><h3>Operations Lead</h3><p>La Gran Familia Deli · July 2025–Present. Oversee daily workflow, customer service, inventory purchasing, supplier coordination, stock organization, equipment upkeep, and operational improvements.</p></article><article class="tile"><h3>Mechanical &amp; Aviation Training</h3><p>Trained in aircraft engine systems, maintenance procedures, and safety compliance through FAA Powerplant certification work, applying technical diagnostics to real equipment.</p></article></div>`,
+        projects: `<h2 id="app-title">Projects</h2><p>Small browser-safe demos based on features from my public GitHub repositories.</p><div class="project-grid"><article class="tile"><h3>Tendero · Profit Snapshot</h3><p>A TypeScript/React Native bookkeeping app for income, expenses, receipts, vendors, prices, and recurring bills.</p><div class="demo"><div class="demo-controls"><input id="tendero-income" type="number" min="0" step="0.01" value="2500" aria-label="Income"><input id="tendero-expense" type="number" min="0" step="0.01" value="1750" aria-label="Expenses"></div><button id="tendero-calculate" type="button">Calculate P&amp;L</button><output class="demo-output" id="tendero-output">Income $2,500.00 · Spend $1,750.00 · Net $750.00 · Margin 30.0%</output></div><a class="repo-link" href="https://github.com/Anderiscool-hash/tendero" target="_blank" rel="noreferrer">Source repository ↗</a></article><article class="tile"><h3>La Gran Familia · Order List</h3><p>A Capacitor mobile app for store finances, inventory, orders, employees, and bilingual offline management.</p><div class="demo"><div class="demo-controls"><input id="lgf-item" type="text" placeholder="Item name" aria-label="Item name"><input id="lgf-quantity" type="number" min="1" value="1" aria-label="Quantity"></div><button id="lgf-add" type="button">Add item</button><ul class="demo-list" id="lgf-list"><li>2 × Milk</li><li>1 × Coffee</li></ul></div><a class="repo-link" href="https://github.com/Anderiscool-hash/la-gran-familia-app" target="_blank" rel="noreferrer">Source repository ↗</a></article><article class="tile"><h3>SportEdge · Paper Edge Test</h3><p>A Python live win-probability and market-edge research engine. This demo performs no trading and uses only values you enter.</p><div class="demo"><div class="demo-controls"><input id="sports-model" type="number" min="0" max="100" value="64" aria-label="Model probability percent"><input id="sports-market" type="number" min="0" max="100" value="52" aria-label="Market probability percent"></div><button id="sports-calculate" type="button">Test paper signal</button><output class="demo-output" id="sports-output">Edge +12.0 points · Paper signal: value detected</output></div><a class="repo-link" href="https://github.com/Anderiscool-hash/Sports-Analysts-" target="_blank" rel="noreferrer">Source repository ↗</a></article><article class="tile"><h3>CSCI-271 · Calculator</h3><p>A browser version of my introductory C++ arithmetic calculator.</p><div class="demo"><div class="demo-controls"><input id="calc-first" type="number" value="12" aria-label="First number"><input id="calc-second" type="number" value="4" aria-label="Second number"></div><button id="calc-run" type="button">Run calculator</button><output class="demo-output" id="calc-output">Sum 16 · Difference 8 · Product 48 · Quotient 3</output></div><a class="repo-link" href="https://github.com/Anderiscool-hash/CSCI-271-Spring26" target="_blank" rel="noreferrer">Source repository ↗</a></article></div>`,
+        education: `<h2 id="app-title">Education</h2><div class="tile"><h3>John Jay College of Criminal Justice (CUNY)</h3><p>B.S. in Computer Science &amp; Cybersecurity</p><p>New York, NY · Expected May 2029 · GPA: 3.6</p></div>`,
+        skills: `<h2 id="app-title">Skills</h2><p>A mix of technical, operational, and hands-on capabilities.</p><div class="skill-grid"><article class="tile"><h3>Technical</h3><p>Mechanical systems, troubleshooting, inventory systems, equipment installation, workflow optimization, and basic scripting concepts.</p></article><article class="tile"><h3>Software</h3><p>Microsoft Excel, PowerPoint, basic system configuration, virtual machines, and AI tool experimentation.</p></article><article class="tile"><h3>Operations</h3><p>Inventory purchasing, supplier coordination, process organization, customer service, and equipment troubleshooting.</p></article><article class="tile"><h3>Languages</h3><p>Fluent in English and Spanish.</p></article></div>`,
+        settings: `<h2 id="app-title">Settings</h2><p>Personalize the XMB background. Changes are saved on this device.</p><div class="settings-list"><div class="setting-row"><label for="background-color">Background color</label><input id="background-color" type="color"><output class="setting-value" id="color-value"></output></div><div class="setting-row"><label for="wave-speed">Wave speed</label><input id="wave-speed" type="range" min="0" max="1.2" step="0.01"><output class="setting-value" id="wave-speed-value"></output></div><div class="setting-row"><label for="particle-speed">Particle speed</label><input id="particle-speed" type="range" min="0" max="3" step="0.01"><output class="setting-value" id="particle-speed-value"></output></div><div class="setting-row"><label for="wave-intensity">Wave intensity</label><input id="wave-intensity" type="range" min="0" max="0.6" step="0.01"><output class="setting-value" id="wave-intensity-value"></output></div><div class="setting-row"><label for="particles-visible">Show particles</label><input class="setting-toggle" id="particles-visible" type="checkbox"><output class="setting-value" id="particles-value"></output></div></div><button class="reset-settings" id="reset-settings" type="button">Reset to defaults</button>`,
+        contact: `<h2 id="app-title">Contact</h2><p>Based in New York, NY and open to technology, operations, and cybersecurity opportunities.</p><div class="project-grid"><article class="tile"><h3>Email &amp; Phone</h3><p><a href="mailto:ayalaander231@gmail.com">ayalaander231@gmail.com</a><br><a href="tel:+19294988442">929-498-8442</a></p></article><article class="tile"><h3>Profiles</h3><p><a href="https://github.com/Anderiscool-hash" target="_blank" rel="noreferrer">GitHub</a> &nbsp; · &nbsp; <a href="https://www.linkedin.com/in/ander-ayala-509524331/" target="_blank" rel="noreferrer">LinkedIn</a></p></article><article class="tile"><h3>Resume</h3><p><a href="Ander_Ayala_Resume.pdf" target="_blank">View resume</a> &nbsp; · &nbsp; <a href="Ander_Ayala_Resume.pdf" download>Download PDF</a></p></article></div>`,
+        updates: `<h2 id="app-title">Update Log</h2><p>Changes appear here only when a new website update is intentionally logged.</p><div id="update-list"><p>Loading updates…</p></div>`,
+      };
+
+      // # UPDATE LOG LOADER
+      // Reads release notes without writing anything or creating visit-based entries.
+      async function loadUpdates() {
+        const list = document.getElementById('update-list');
+        try {
+          const response = await fetch(`updates.json?cache=${Date.now()}`);
+          if (!response.ok) throw new Error('Update log unavailable');
+          const data = await response.json();
+          list.innerHTML = data.updates.map(update => `<article class="update-entry"><div class="update-meta">v${update.version} · ${update.date}</div><h3>${update.title}</h3><ul>${update.changes.map(change => `<li>${change}</li>`).join('')}</ul></article>`).join('');
+        } catch (error) {
+          list.innerHTML = '<p>The update log could not be loaded.</p>';
+        }
+      }
+
+      // # VISITOR SETTINGS
+      // Reads saved preferences and applies them directly to the live renderers.
+      const defaultPreferences = { color: '#2559b3', waveSpeed: 0.18, particleSpeed: 0.18, waveIntensity: 0.2, particlesVisible: true };
+      let preferences = { ...defaultPreferences };
+      try { preferences = { ...preferences, ...JSON.parse(localStorage.getItem('ander-xmb-settings') || '{}') }; } catch (_) {}
+
+      function applyPreferences() {
+        const color = preferences.color.replace('#', '');
+        window.SPLINE_SETTINGS.gradientPreset = 'default';
+        window.SPLINE_SETTINGS.colorR = parseInt(color.slice(0, 2), 16);
+        window.SPLINE_SETTINGS.colorG = parseInt(color.slice(2, 4), 16);
+        window.SPLINE_SETTINGS.colorB = parseInt(color.slice(4, 6), 16);
+        window.SPLINE_SETTINGS.flowSpeed = Number(preferences.waveSpeed);
+        window.SPLINE_SETTINGS.bandAmplitude = Number(preferences.waveIntensity);
+        window.PARTICLE_SETTINGS.flowSpeed = Number(preferences.particleSpeed);
+        window.PARTICLE_SETTINGS.opacity = preferences.particlesVisible ? 0.75 : 0;
+      }
+
+      function savePreferences() {
+        applyPreferences();
+        localStorage.setItem('ander-xmb-settings', JSON.stringify(preferences));
+      }
+
+      applyPreferences();
+
+      // # SETTINGS EVENTS
+      // Connects controls after the Settings app has been inserted into the dialog.
+      function connectSettings() {
+        const color = document.getElementById('background-color');
+        const waveSpeed = document.getElementById('wave-speed');
+        const particleSpeed = document.getElementById('particle-speed');
+        const intensity = document.getElementById('wave-intensity');
+        const particlesVisible = document.getElementById('particles-visible');
+        color.value = preferences.color;
+        waveSpeed.value = preferences.waveSpeed;
+        particleSpeed.value = preferences.particleSpeed;
+        intensity.value = preferences.waveIntensity;
+        particlesVisible.checked = preferences.particlesVisible;
+
+        function updateLabels() {
+          document.getElementById('color-value').textContent = color.value.toUpperCase();
+          document.getElementById('wave-speed-value').textContent = `${Number(waveSpeed.value).toFixed(2)}×`;
+          document.getElementById('particle-speed-value').textContent = `${Number(particleSpeed.value).toFixed(2)}×`;
+          document.getElementById('wave-intensity-value').textContent = Number(intensity.value).toFixed(2);
+          document.getElementById('particles-value').textContent = particlesVisible.checked ? 'On' : 'Off';
+        }
+
+        function updateSettings() {
+          preferences = { color: color.value, waveSpeed: Number(waveSpeed.value), particleSpeed: Number(particleSpeed.value), waveIntensity: Number(intensity.value), particlesVisible: particlesVisible.checked };
+          updateLabels();
+          savePreferences();
+        }
+
+        [color, waveSpeed, particleSpeed, intensity, particlesVisible].forEach(control => control.addEventListener('input', updateSettings));
+        document.getElementById('reset-settings').addEventListener('click', () => {
+          preferences = { ...defaultPreferences };
+          color.value = preferences.color;
+          waveSpeed.value = preferences.waveSpeed;
+          particleSpeed.value = preferences.particleSpeed;
+          intensity.value = preferences.waveIntensity;
+          particlesVisible.checked = preferences.particlesVisible;
+          localStorage.removeItem('ander-xmb-settings');
+          updateLabels();
+          applyPreferences();
+        });
+        updateLabels();
+      }
+
+      // # PROJECT DEMO EVENTS
+      // Activates the four small, local-only demos after Projects is rendered.
+      function connectProjectDemos() {
+        const money = value => new Intl.NumberFormat([], { style: 'currency', currency: 'USD' }).format(value);
+
+        document.getElementById('tendero-calculate').addEventListener('click', () => {
+          const income = Math.max(0, Number(document.getElementById('tendero-income').value) || 0);
+          const spend = Math.max(0, Number(document.getElementById('tendero-expense').value) || 0);
+          const net = income - spend;
+          const margin = income ? (net / income) * 100 : 0;
+          document.getElementById('tendero-output').textContent = `Income ${money(income)} · Spend ${money(spend)} · Net ${money(net)} · Margin ${margin.toFixed(1)}%`;
+        });
+
+        document.getElementById('lgf-add').addEventListener('click', () => {
+          const item = document.getElementById('lgf-item');
+          const quantity = document.getElementById('lgf-quantity');
+          const name = item.value.trim();
+          if (!name) { item.focus(); return; }
+          const row = document.createElement('li');
+          row.textContent = `${Math.max(1, Number(quantity.value) || 1)} × ${name}`;
+          document.getElementById('lgf-list').appendChild(row);
+          item.value = '';
+          item.focus();
+        });
+
+        document.getElementById('sports-calculate').addEventListener('click', () => {
+          const model = Math.min(100, Math.max(0, Number(document.getElementById('sports-model').value) || 0));
+          const market = Math.min(100, Math.max(0, Number(document.getElementById('sports-market').value) || 0));
+          const edge = model - market;
+          const signal = edge >= 5 ? 'value detected' : edge <= -5 ? 'market priced higher' : 'no clear edge';
+          document.getElementById('sports-output').textContent = `Edge ${edge >= 0 ? '+' : ''}${edge.toFixed(1)} points · Paper signal: ${signal}`;
+        });
+
+        document.getElementById('calc-run').addEventListener('click', () => {
+          const first = Number(document.getElementById('calc-first').value) || 0;
+          const second = Number(document.getElementById('calc-second').value) || 0;
+          const quotient = second === 0 ? 'undefined' : (first / second).toFixed(2).replace(/\.00$/, '');
+          document.getElementById('calc-output').textContent = `Sum ${first + second} · Difference ${first - second} · Product ${first * second} · Quotient ${quotient}`;
+        });
+      }
+
+      // # BOOT CONTROLLER
+      // Hides the loading screen and reveals the XMB interface.
+      function finishBoot() {
+        if (bootFinished) return;
+        bootFinished = true;
+        boot.classList.add('finished');
+        userScreen.classList.add('active');
+        setTimeout(() => enterUserButton.focus(), 700);
+      }
+
+      function enterPortfolio() {
+        if (portfolioEntered) return;
+        playSound('select');
+        portfolioEntered = true;
+        userScreen.classList.remove('active');
+        main.classList.add('ready');
+        setTimeout(() => {
+          select(updatesCategoryIndex);
+          openApp('updates');
+        }, 500);
+      }
+
+      setTimeout(finishBoot, matchMedia('(prefers-reduced-motion: reduce)').matches ? 100 : 2850);
+      boot.addEventListener('click', finishBoot, { once: true });
+      enterUserButton.addEventListener('click', enterPortfolio);
+
+      // # MENU SELECTION
+      // Changes the highlighted app and wraps at either end of the menu.
+      function select(index) {
+        const previousIndex = selectedIndex;
+        selectedIndex = (index + buttons.length) % buttons.length;
+        main.classList.remove('submenu-active');
+        appView.classList.remove('open');
+        buttons.forEach((button, i) => button.classList.toggle('selected', i === selectedIndex));
+        buttons[selectedIndex].focus();
+        buttons[selectedIndex].scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+        if (selectedIndex !== previousIndex) playSound('move');
+      }
+
+      // # OPEN AND CLOSE APPS
+      // Places the selected content in the reusable side panel and controls visibility.
+      function openApp(name) {
+        playSound('select');
+        appContent.innerHTML = apps[name];
+        appView.classList.add('open');
+        if (name === 'settings') connectSettings();
+        if (name === 'projects') connectProjectDemos();
+        if (name === 'updates') loadUpdates();
+      }
+
+      function closeApp() {
+        playSound('back');
+        appView.classList.remove('open');
+        buttons[selectedIndex].focus();
+      }
+
+      // # MOUSE AND TOUCH CONTROLS
+      // Makes each app respond to focus and clicks/taps.
+      buttons.forEach((button, index) => {
+        button.addEventListener('focus', () => select(index));
+        button.addEventListener('mouseenter', () => select(index));
+        button.addEventListener('click', () => {
+          if (button.dataset.category === 'socials') {
+            socialButtons[0].focus();
+            socialButtons[0].scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'nearest' });
+          } else if (button.dataset.app) {
+            openApp(button.dataset.app);
+          }
+        });
+      });
+
+      // # SOCIAL PREVIEW
+      // Updates the information panel when a social app is hovered or focused.
+      function previewSocial(button) {
+        const changed = !button.classList.contains('active');
+        main.classList.add('submenu-active');
+        socialButtons.forEach(item => item.classList.toggle('active', item === button));
+        socialPreviewTitle.textContent = button.dataset.title;
+        socialPreviewDescription.textContent = button.dataset.description;
+        socialPreviewLink.href = button.dataset.url;
+        if (changed) playSound('move');
+      }
+
+      socialButtons.forEach(button => {
+        button.addEventListener('mouseenter', () => previewSocial(button));
+        button.addEventListener('focus', () => previewSocial(button));
+        button.addEventListener('click', () => {
+          playSound('select');
+          previewSocial(button);
+          appView.classList.remove('open');
+        });
+      });
+
+      backButton.addEventListener('click', closeApp);
+
+      // # KEYBOARD CONTROLS
+      // Supports arrow navigation, Enter to open, and Escape to return.
+      document.addEventListener('keydown', event => {
+        if (!portfolioEntered) return;
+        if (event.key === 'Escape' && appView.classList.contains('open')) { closeApp(); return; }
+        const socialIndex = socialButtons.indexOf(document.activeElement);
+        if (socialIndex !== -1) {
+          if (event.key === 'ArrowDown') { event.preventDefault(); socialButtons[(socialIndex + 1) % socialButtons.length].focus(); }
+          if (event.key === 'ArrowUp') {
+            event.preventDefault();
+            if (socialIndex === 0) select(socialCategoryIndex);
+            else socialButtons[socialIndex - 1].focus();
+          }
+          if (event.key === 'ArrowRight') { event.preventDefault(); select(socialCategoryIndex + 1); }
+          if (event.key === 'ArrowLeft' || event.key === 'Escape') { event.preventDefault(); select(socialCategoryIndex); }
+          return;
+        }
+        if (event.key === 'ArrowRight') { event.preventDefault(); select(selectedIndex + 1); }
+        if (event.key === 'ArrowLeft') { event.preventDefault(); select(selectedIndex - 1); }
+        if (event.key === 'ArrowDown' && buttons[selectedIndex].dataset.category === 'socials') { event.preventDefault(); socialButtons[0].focus(); }
+        if (event.key === 'Enter') {
+          if (buttons[selectedIndex].dataset.category === 'socials') socialButtons[0].focus();
+          else openApp(buttons[selectedIndex].dataset.app);
+        }
+      });
+
+      // # MOUSE WHEEL AND TRACKPAD
+      // Scrolls through social apps and returns to the category row when scrolling up.
+      let lastWheelMove = 0;
+      document.addEventListener('wheel', event => {
+        if (!portfolioEntered) return;
+        const socialIndex = socialButtons.indexOf(document.activeElement);
+        if (socialIndex === -1 || Math.abs(event.deltaY) < 8) return;
+        event.preventDefault();
+        const now = performance.now();
+        if (now - lastWheelMove < 220) return;
+        lastWheelMove = now;
+        if (event.deltaY < 0) {
+          if (socialIndex === 0) select(socialCategoryIndex);
+          else socialButtons[socialIndex - 1].focus();
+        } else {
+          socialButtons[Math.min(socialIndex + 1, socialButtons.length - 1)].focus();
+        }
+      }, { passive: false });
+
+      // # CLOCK
+      // Displays local time and refreshes it every thirty seconds.
+      const clock = document.getElementById('clock');
+      function updateClock() { clock.textContent = new Intl.DateTimeFormat([], { hour: 'numeric', minute: '2-digit' }).format(new Date()); }
+      updateClock();
+      setInterval(updateClock, 30000);
+
+      // # WEBGL SETUP
+      // Creates the graphics context used to draw the animated background.
+      const canvas = document.getElementById('wave-canvas');
+      const gl = canvas.getContext('webgl2', { antialias: true, alpha: false, powerPreference: 'high-performance' });
+      if (!gl) { canvas.remove(); return; }
+
+      gl.getExtension('OES_texture_float_linear');
+      gl.getExtension('EXT_color_buffer_float');
+
+      // # CANVAS RESIZING
+      // Matches the drawing resolution to the browser window and display density.
+      function resize() {
+        const dpr = Math.min(window.devicePixelRatio || 1, 2);
+        canvas.width = Math.floor(innerWidth * dpr);
+        canvas.height = Math.floor(innerHeight * dpr);
+        canvas.style.width = `${innerWidth}px`;
+        canvas.style.height = `${innerHeight}px`;
+        gl.viewport(0, 0, canvas.width, canvas.height);
+      }
+
+      addEventListener('resize', resize);
+      resize();
+      // # ANIMATION LAYERS
+      // Builds the wave and particle renderers from the loaded XMB libraries.
+      const spline = window.createSplineLayer(gl, canvas);
+      const particles = window.createParticlesLayer(gl, canvas);
+      let previous = performance.now();
+      let splineTime = 0;
+      let particleTime = Math.random() * 1000;
+
+      // # ANIMATION LOOP
+      // Draws both layers again for every frame produced by the browser.
+      function render(now) {
+        const elapsed = Math.max(0, (now - previous) / 1000);
+        previous = now;
+        splineTime += elapsed;
+        particleTime += elapsed;
+        spline.render(splineTime);
+        particles.render(particleTime);
+        requestAnimationFrame(render);
+      }
+      requestAnimationFrame(render);
+    })();
+  </script>
+</body>
+</html>

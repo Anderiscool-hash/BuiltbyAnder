@@ -1,0 +1,5 @@
+PlayStation-3-XMB/node_modules/
+.DS_Store
+Thumbs.db
+*.log
+.tools/
