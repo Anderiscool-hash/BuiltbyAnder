@@ -916,7 +916,7 @@
           resumeFactTimer = setInterval(showRandomResumeFact, 1100);
           resumeLaunch.classList.add('active');
           resumeLaunch.setAttribute('aria-hidden', 'false');
-          const launchDelay = matchMedia('(prefers-reduced-motion: reduce)').matches ? 300 : 2400;
+          const launchDelay = matchMedia('(prefers-reduced-motion: reduce)').matches ? 200 : 1000;
           resumeLaunchTimer = setTimeout(() => {
             clearInterval(resumeFactTimer);
             if (resumeFrame.src === 'about:blank') resumeFrame.src = resumeFrame.dataset.src;

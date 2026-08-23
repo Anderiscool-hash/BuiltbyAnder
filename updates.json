@@ -2,6 +2,15 @@
   "updates": [
     {
       "date": "2026-08-23",
+      "version": "1.0.11",
+      "title": "Faster resume launch",
+      "changes": [
+        "Reduced the Resume loading sequence from 2.4 seconds to 1 second",
+        "Kept a randomized fact visible during the shortened launch"
+      ]
+    },
+    {
+      "date": "2026-08-23",
       "version": "1.0.10",
       "title": "Random resume loading facts",
       "changes": [
