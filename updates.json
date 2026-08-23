@@ -2,6 +2,16 @@
   "updates": [
     {
       "date": "2026-08-23",
+      "version": "1.0.5",
+      "title": "Cleaner XMB interface",
+      "changes": [
+        "Removed the top name, online status, and clock bar",
+        "Removed the bottom keyboard navigation hint",
+        "Removed the associated unused styles and clock code"
+      ]
+    },
+    {
+      "date": "2026-08-23",
       "version": "1.0.4",
       "title": "Vercel asset and attribution fix",
       "changes": [

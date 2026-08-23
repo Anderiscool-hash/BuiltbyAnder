@@ -146,22 +146,6 @@
 
     .interface.ready { opacity: 1; }
 
-    .top-bar {
-      position: fixed;
-      top: 4vh;
-      left: 5vw;
-      right: 5vw;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      font-size: clamp(.75rem, 1.3vw, .95rem);
-      letter-spacing: .06em;
-    }
-
-    .brand { font-weight: 300; text-transform: uppercase; }
-    .status { display: flex; align-items: center; gap: 1rem; }
-    .online-dot { width: 7px; height: 7px; border-radius: 50%; background: #75ffb0; box-shadow: 0 0 10px #75ffb0; }
-
     .xmb-menu {
       position: fixed;
       top: 37%;
@@ -359,8 +343,6 @@
     .app-button:hover .app-label,
     .app-button:focus-visible .app-label { opacity: 1; transform: none; }
 
-    .controls { padding-left: 11vw; color: rgba(255,255,255,.6); font-size: .72rem; letter-spacing: .06em; }
-
     /* # SIDE CONTENT PANEL
        Keeps selected app content beside the XMB instead of using a popup. */
     .app-view {
@@ -477,8 +459,6 @@
     @media (max-width: 600px) {
       .xmb-menu { top: 32%; }
       .menu-track { padding-inline: 8vw; gap: 1.2rem; }
-      .controls { padding-left: 8vw; }
-      .online-label { display: none; }
       .setting-row { grid-template-columns: 1fr 1.5fr; }
       .setting-value { grid-column: 2; text-align: left; }
       .social-preview { left: calc(100% + 1.5rem); width: 52vw; }
@@ -520,11 +500,6 @@
   <!-- # MAIN INTERFACE
        Contains the status bar, welcome message, and selectable XMB apps. -->
   <main class="interface" id="interface">
-    <header class="top-bar">
-      <span class="brand">Ander Ayala</span>
-      <span class="status"><span class="online-dot"></span><span class="online-label">Portfolio Online</span><time id="clock"></time></span>
-    </header>
-
     <nav class="xmb-menu" aria-label="Portfolio apps">
       <div class="menu-track">
         <button class="app-button top-app selected" data-app="about" aria-label="Open User Profile">
@@ -573,7 +548,6 @@
           <span class="app-icon" aria-hidden="true"><img src="assets/ps3/Icons/systematic/png/menu_info.png" alt=""></span><span class="app-label">Credits</span>
         </button>
       </div>
-      <p class="controls">← → Navigate &nbsp; · &nbsp; Enter Open &nbsp; · &nbsp; Esc Back</p>
     </nav>
   </main>
 
@@ -917,13 +891,6 @@
           socialButtons[Math.min(socialIndex + 1, socialButtons.length - 1)].focus();
         }
       }, { passive: false });
-
-      // # CLOCK
-      // Displays local time and refreshes it every thirty seconds.
-      const clock = document.getElementById('clock');
-      function updateClock() { clock.textContent = new Intl.DateTimeFormat([], { hour: 'numeric', minute: '2-digit' }).format(new Date()); }
-      updateClock();
-      setInterval(updateClock, 30000);
 
       // # WEBGL SETUP
       // Creates the graphics context used to draw the animated background.
