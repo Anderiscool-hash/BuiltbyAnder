@@ -454,6 +454,32 @@
 
     .back-button:hover, .back-button:focus-visible { background: rgba(255,255,255,.2); outline: 2px solid white; }
 
+    /* # RESUME POPUP
+       Presents the PDF in a focused, full-screen viewer above the XMB. */
+    .resume-viewer {
+      position: fixed;
+      inset: 0;
+      z-index: 20;
+      display: grid;
+      place-items: center;
+      padding: 4vh 4vw;
+      background: rgba(0, 7, 20, .82);
+      backdrop-filter: blur(12px);
+      opacity: 0;
+      visibility: hidden;
+      pointer-events: none;
+      transition: opacity .25s ease, visibility .25s;
+    }
+
+    .resume-viewer.open { opacity: 1; visibility: visible; pointer-events: auto; }
+    .resume-window { width: min(100%, 1000px); height: 92vh; display: flex; flex-direction: column; overflow: hidden; border: 1px solid rgba(255,255,255,.3); border-radius: 14px; background: #0a1629; box-shadow: 0 24px 80px rgba(0,0,0,.55); }
+    .resume-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: .8rem 1rem; background: rgba(255,255,255,.08); }
+    .resume-toolbar h2 { margin: 0; font-size: 1rem; font-weight: 500; }
+    .resume-actions { display: flex; align-items: center; gap: .8rem; }
+    .resume-actions a, .resume-actions button { color: #fff; font: inherit; font-size: .78rem; }
+    .resume-actions button { padding: .45rem .8rem; border: 1px solid rgba(255,255,255,.4); border-radius: 999px; background: rgba(255,255,255,.1); cursor: pointer; }
+    .resume-window iframe { flex: 1; width: 100%; border: 0; background: #fff; }
+
     /* # RESPONSIVE DESIGN
        Adjusts spacing and menu placement for phone-sized screens. */
     @media (max-width: 600px) {
@@ -464,6 +490,10 @@
       .social-preview { left: calc(100% + 1.5rem); width: 52vw; }
       .app-view { top: 57vh; left: 8vw; right: 8vw; width: auto; max-height: 37vh; }
       .app-card { max-height: 37vh; }
+      .resume-viewer { padding: 2vh 3vw; }
+      .resume-window { height: 96vh; }
+      .resume-toolbar { align-items: flex-start; flex-direction: column; }
+      .resume-actions { width: 100%; justify-content: space-between; gap: .45rem; }
     }
 
     /* # ACCESSIBILITY
@@ -516,9 +546,6 @@
             <button class="social-button" data-app="linkedin" data-title="LinkedIn" data-description="See my professional experience, education, and connections." data-url="https://www.linkedin.com/in/ander-ayala-509524331/" aria-label="Select LinkedIn">
               <span class="social-icon" aria-hidden="true"><img src="assets/ps3/Icons/systematic/png/menu_user.png" alt=""></span><span>LinkedIn</span>
             </button>
-            <button class="social-button" data-app="resume" data-title="Resume" data-description="View or download my education, experience, skills, and contact information." data-url="Ander_Ayala_Resume.pdf" data-link-label="View resume ↗" aria-label="Select Resume">
-              <span class="social-icon" aria-hidden="true"><img src="assets/ps3/Icons/systematic/png/resume.png" alt=""></span><span>Resume</span>
-            </button>
           </div>
           <aside class="social-preview" aria-live="polite">
             <h2 id="social-preview-title">GitHub</h2>
@@ -537,6 +564,9 @@
         </button>
         <button class="app-button top-app" data-app="skills" aria-label="Open Skills">
           <span class="app-icon" aria-hidden="true"><img src="assets/ps3/Icons/systematic/png/core.png" alt=""></span><span class="app-label">Skills</span>
+        </button>
+        <button class="app-button top-app" data-app="resume" aria-label="Open Resume">
+          <span class="app-icon" aria-hidden="true"><img src="assets/ps3/Icons/systematic/png/resume.png" alt=""></span><span class="app-label">Resume</span>
         </button>
         <button class="app-button top-app" data-app="settings" aria-label="Open Settings">
           <span class="app-icon" aria-hidden="true"><img src="assets/ps3/Icons/systematic/png/settings.png" alt=""></span><span class="app-label">Settings</span>
@@ -561,6 +591,22 @@
       <div id="app-content"></div>
       <button class="back-button" id="back-button">← Back to menu</button>
     </article>
+  </section>
+
+  <!-- # RESUME VIEWER
+       Opens the resume over the XMB while keeping view and download controls visible. -->
+  <section class="resume-viewer" id="resume-viewer" role="dialog" aria-modal="true" aria-labelledby="resume-viewer-title" aria-hidden="true">
+    <div class="resume-window">
+      <header class="resume-toolbar">
+        <h2 id="resume-viewer-title">Ander Ayala · Resume</h2>
+        <div class="resume-actions">
+          <a href="Ander_Ayala_Resume.pdf" target="_blank" rel="noreferrer">Open in new tab</a>
+          <a href="Ander_Ayala_Resume.pdf" download="Ander_Ayala_Resume.pdf">Download PDF</a>
+          <button id="close-resume" type="button" aria-label="Close resume">Close</button>
+        </div>
+      </header>
+      <iframe src="Ander_Ayala_Resume.pdf#view=FitH" title="Ander Ayala resume PDF"></iframe>
+    </div>
   </section>
 
   <!-- # XMB LIBRARIES
@@ -590,6 +636,8 @@
       const appView = document.getElementById('app-view');
       const appContent = document.getElementById('app-content');
       const backButton = document.getElementById('back-button');
+      const resumeViewer = document.getElementById('resume-viewer');
+      const closeResumeButton = document.getElementById('close-resume');
       let selectedIndex = 0;
       let portfolioEntered = false;
       let bootFinished = false;
@@ -799,6 +847,13 @@
       // Places the selected content in the reusable side panel and controls visibility.
       function openApp(name) {
         playSound('select');
+        if (name === 'resume') {
+          appView.classList.remove('open');
+          resumeViewer.classList.add('open');
+          resumeViewer.setAttribute('aria-hidden', 'false');
+          closeResumeButton.focus();
+          return;
+        }
         appContent.innerHTML = apps[name];
         appView.classList.add('open');
         if (name === 'settings') connectSettings();
@@ -809,6 +864,13 @@
       function closeApp() {
         playSound('back');
         appView.classList.remove('open');
+        buttons[selectedIndex].focus();
+      }
+
+      function closeResume() {
+        playSound('back');
+        resumeViewer.classList.remove('open');
+        resumeViewer.setAttribute('aria-hidden', 'true');
         buttons[selectedIndex].focus();
       }
 
@@ -851,11 +913,16 @@
       });
 
       backButton.addEventListener('click', closeApp);
+      closeResumeButton.addEventListener('click', closeResume);
+      resumeViewer.addEventListener('click', event => {
+        if (event.target === resumeViewer) closeResume();
+      });
 
       // # KEYBOARD CONTROLS
       // Supports arrow navigation, Enter to open, and Escape to return.
       document.addEventListener('keydown', event => {
         if (!portfolioEntered) return;
+        if (event.key === 'Escape' && resumeViewer.classList.contains('open')) { closeResume(); return; }
         if (event.key === 'Escape' && appView.classList.contains('open')) { closeApp(); return; }
         const socialIndex = socialButtons.indexOf(document.activeElement);
         if (socialIndex !== -1) {

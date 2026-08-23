@@ -2,6 +2,17 @@
   "updates": [
     {
       "date": "2026-08-23",
+      "version": "1.0.8",
+      "title": "Resume viewer popup",
+      "changes": [
+        "Restored Resume as its own main XMB tab",
+        "Added an on-page PDF viewer popup for the resume",
+        "Added close, open-in-new-tab, and download controls",
+        "Removed Resume from the Socials submenu"
+      ]
+    },
+    {
+      "date": "2026-08-23",
       "version": "1.0.7",
       "title": "Resume added to Socials",
       "changes": [
